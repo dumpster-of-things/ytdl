@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
 while read line; do
-	#[[ "${line}" == *youtu[\.b][be]* ]] && ytURL="${line}" || continue
 	case "${line}" in
 	*youtu[\.b][be]*) ytURL="${line}" ;;
-	[a-zA-Z0-9]*[\.\/]*[!\.]) ytURL="--extractor $(echo ${line##*'//'} | op '#*www\.' '%%\.*') '${line}'" ;;
+	[a-zA-Z0-9]*[\.\/]*[!\.]) ytURL="$(op "${line}" "##*'//'" '#*www\.' '%%\/*' '%\.*' '##*\.' '(--extractor ).' ".( '${line}')")" ;;
 	*) continue
 	esac
 done < <({ zenity --forms --width 333 --title "YTDLazy - Video" --text "Provide gMapsAPI-compliant directions to the otherShoneys:" --add-entry="url" --add-entry="note" --separator=$'\n'\| | tee >(op '??=\|*' '//\|/' > ~/.tmp/${0##*\/}.note ; ) | op "?!=[$'\n'\|]*" ; } )
-#done < <(zenity --entry --width 333 --title "YTDLazy - Video" )
 
 if [[ -n "${ytURL}" ]]; then
 	ytdl-quick "${ytURL}" && notify-send "$(echo -e "Successfully downloaded:\n${ytURL}")" || notify-send "$(echo -e "FAILED to download:\n${ytURL}")"
