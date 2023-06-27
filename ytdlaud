@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 while read line; do
-	# [[ "${line}" == *youtu[\.b][be]* ]] && ytURL="${line}" || continue
 	[[ "${line}" != *youtu[\.b][be]* ]] || ytURL="${line}"
 done < <({ zenity --forms --width 333 --title "YTDLazy - Audio" --text "Provide gMapsAPI-compliant directions to the otherShoneys:" --add-entry="url" --add-entry="note" --separator=$'\n'\| | tee >(op '??=\|*' '//\|/' > ~/.tmp/${0##*\/}.note ; ) | op "?!=[$'\n'\|]*" ; } )
-#done < <(zenity --entry --width 360 --title "YTDLazy - Audio" --text "Provide gMapsAPI-compliant directions to the otherShoneys:" ) #(zenity --entry --width 333 --title "YTDLazy - Audio" )
 
 if [[ -n "${ytURL}" ]]; then
 	ytdl-quick -A "${ytURL}" && notify-send "$(echo -e "Successfully downloaded:\n${ytURL}")" || notify-send "$(echo -e "FAILED to download:\n${ytURL}")"
