@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-## TODO: add support for other sites::"--extractors" by working out the kins with passing arbitrary args to youtube-dl.
 _Usage() {
-	echo 'USAGE:   Literally just throw whatever at me.  I got dem ass.'
+	echo 'USAGE:   `ytdl-quick  [-options]  url(s)[audio,video,playlist]...`'
 	echo ' -[-fLaGz] are case-insensitive.'
 	echo '   -h, --help    :(show this message)'
 	echo '   -A, --audio   :(Audio)'
 	echo '   -ad           :(Adstractor){ ${@} != *[ ! yt-debug-info ]* || (false && fuckOff )2>/dev/null'
 	echo '   -q            :(supress notifications)'
 	echo '   -[dDoOpP]     :{specify output PATH}'
-	echo '   urls[audio,video,playlist]'
-	echo '   additional yt-dl cmds ...'
+	echo '   -da,          :{specify PATH to alternative archive list}'
+    echo '    --archive'
+	echo ""
 }
 
 for((a=1;a<=${#};a++)); do
@@ -26,8 +26,6 @@ for((a=1;a<=${#};a++)); do
 done
 mkdir -p "${YTDownz:=${Dir:-${HOME:-/home/${USER}}/${Place:-Videos/YTDL/.Holding}/$(date '+%Y%m%d')}}"
 
-## FORMATS:
-#   '-f 22' seems to be best in terms of quality vs. size.
 ## Download Archive (History):
 #   --download-archive ~/.cache/youtube-dl/History.ytdl
 [[ -f ${Skipz:=$HOME/.cache/ytdl_history.list} ]] || touch $Skipz
@@ -43,10 +41,6 @@ _Playlist() { notify-send "${1}_PL: ${2}" ;
 	_${1}_PL "${2}"
 }
 
-### perhaps revisit building notifications in once we tackle adding channels functionality and/or ytmenu integration.
-#for ((i=0;i<${#Linkz[@]};i++)) do
-#	([[ "${Linkz[i]}" == *[pP][lL][aA][yY][lL][iI][sS][tT]* ]] && _Playlist "${Action:-YTDL}" "${Linkz[i]}" || _Default "${Action:-YTDL}" "${Linkz[i]}" ) && notify-send "$(echo -e "Successfully downloaded:\n${Linkz[i]}")" || notify-send "$(echo -e "FAILED to downloaded:\n${Linkz[i]}")"
-#done
 for ((i=0;i<${#Linkz[@]};i++)) do
 	if [[ "${Linkz[i]}" == *[pP][lL][aA][yY][lL][iI][sS][tT]* ]]; then
 		_Playlist "${Action:-YTDL}" "${Linkz[i]}"
