@@ -22,7 +22,6 @@ while read line; do
 		fi
 	esac
 done < <({ zenity --forms --width 333 --title "YTDLazy - Adstractor" --text "Provide gMapsAPI-compliant directions to the otherShoneys:" --add-entry="debugInfo/url" --add-entry="note" --separator=$'\n'\| | tee >(op '??=\|*' '//\|/' > ~/.tmp/${0##*\/}.note ; ) | op "?!=[$'\n'\|]*" ; } )
-#done < <(zenity --entry --width 333 --title "YTDLazy - Adstractor" )
 
 if [[ -n "${adURL}" ]]; then
 	ytdl-quick -ad "${adURL}" && notify-send "$(echo -e "Successfully downloaded:\n${adURL}")" || notify-send "$(echo -e "FAILED to download:\n${adURL}")"
