@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+## TODO: add support for other sites::"--extractors" by working out the kins with passing arbitrary args to youtube-dl.
+_Usage() {
+	echo 'USAGE:   Literally just throw whatever at me.  I got dem ass.'
+	echo ' -[-fLaGz] are case-insensitive.'
+	echo '   -h, --help    :(show this message)'
+	echo '   -A, --audio   :(Audio)'
+	echo '   -ad           :(Adstractor){ ${@} != *[ ! yt-debug-info ]* || (false && fuckOff )2>/dev/null'
+	echo '   -q            :(supress notifications)'
+	echo '   -[dDoOpP]     :{specify output PATH}'
+	echo '   urls[audio,video,playlist]'
+	echo '   additional yt-dl cmds ...'
+}
+
+for((a=1;a<=${#};a++)); do
+	case "${!a}" in
+	'-h'|'--help') _Usage 0 ;;
+	'-ad') Action=YTDL ; Place="Videos/YTDL/Ad-Watch" ;;
+	'-A'|'--audio') Action=YTDLA ; Place="Music/YTDLA" ;;
+	\-[oOpP]|\-\-[dDoO][iIuU][rRtT]|\-\-[fFoO][oOuU][lLtT][dDpP][eEuU][rRtT]|'--path') ((++a)) && Dir="${!a}" ;;
+	'-da'|'--archive'|'--skip') ((++a)) && [[ ! -f "${!a}" ]] || Skipz="${!a}" ;;
+	http*|www*|*youtu*) Linkz[${#Linkz[@]}]="${!a}" ;;
+	*) [[ -d "${!a}" ]] && Dir="${!a}" || Optz[${#Optz[@]}]="${!a}"
+	esac
+done
+mkdir -p "${YTDownz:=${Dir:-${HOME:-/home/${USER}}/${Place:-Videos/YTDL/.Holding}/$(date '+%Y%m%d')}}"
+
+## FORMATS:
+#   '-f 22' seems to be best in terms of quality vs. size.
+## Download Archive (History):
+#   --download-archive ~/.cache/youtube-dl/History.ytdl
+[[ -f ${Skipz:=$HOME/.cache/ytdl_history.list} ]] || touch $Skipz
+
+_Default() { notify-send "${1}: ${2}" ;
+	_YTDL() { yt-dlp --download-archive "${Skipz}" --restrict-filenames --output "${YTDownz}"/"%(uploader)s"/"%(upload_date)s"."%(title)s"."%(id)s"."%(ext)s" --write-annotations --write-description --write-info-json ${Optz[@]} -i "${1}"; }
+	_YTDLA() { yt-dlp --download-archive "${Skipz}" -x --audio-format "best" --restrict-filenames --output "${YTDownz}"/"%(uploader)s"/"%(upload_date)s"."%(title)s"."%(id)s"."%(ext)s" --write-annotations --write-description --write-info-json ${Optz[@]} -i "${1}"; }
+	_${1} "${2}"
+}
+_Playlist() { notify-send "${1}_PL: ${2}" ;
+	_YTDL_PL() { yt-dlp --download-archive "${Skipz}" --prefer-free-formats --restrict-filenames --yes-playlist --output "${YTDownz}"/"%(uploader)s"."%(playlist_title)s"/"%(upload_date)s"."%(title)s"."%(ext)s" --write-annotations --write-description --write-info-json ${Optz[@]} -i "${1}"; }
+	_YTDLA_PL() { yt-dlp --download-archive "${Skipz}" -x --audio-format "best" --restrict-filenames --yes-playlist --output "${YTDownz}"/"%(uploader)s"."%(playlist_title)s"/"%(upload_date)s"."%(title)s"."%(ext)s" --write-annotations --write-description --write-info-json ${Optz[@]} -i "${1}"; }
+	_${1}_PL "${2}"
+}
+
+### perhaps revisit building notifications in once we tackle adding channels functionality and/or ytmenu integration.
+#for ((i=0;i<${#Linkz[@]};i++)) do
+#	([[ "${Linkz[i]}" == *[pP][lL][aA][yY][lL][iI][sS][tT]* ]] && _Playlist "${Action:-YTDL}" "${Linkz[i]}" || _Default "${Action:-YTDL}" "${Linkz[i]}" ) && notify-send "$(echo -e "Successfully downloaded:\n${Linkz[i]}")" || notify-send "$(echo -e "FAILED to downloaded:\n${Linkz[i]}")"
+#done
+for ((i=0;i<${#Linkz[@]};i++)) do
+	if [[ "${Linkz[i]}" == *[pP][lL][aA][yY][lL][iI][sS][tT]* ]]; then
+		_Playlist "${Action:-YTDL}" "${Linkz[i]}"
+	else
+		_Default "${Action:-YTDL}" "${Linkz[i]}"
+	fi
+done

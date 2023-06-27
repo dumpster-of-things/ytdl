@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+while read line; do
+	case "${line}" in
+	*'"addocid": "'*)
+		if [[ "${#line}" == 25 ]]; then
+			adURL="https://youtu.be/${line:12:11}"
+		else
+			adURL="${line##*': "'}" && adURL="https://youtu.be/${adURL%\"*}"
+		fi
+		;;
+	*'"ad_docid": "'*)
+		if [[ "${#line}" == 26 ]]; then
+			adURL="https://youtu.be/${line:13:11}"
+		else
+			adURL="${line##*': "'}" && adURL="https://youtu.be/${adURL%\"*}"
+		fi
+		;;
+	*)
+		if [[ -z ${adURL} ]]; then
+			[[ "${line}" != *youtu* ]] || adURL="${line}"
+		fi
+	esac
+done < <({ zenity --forms --width 333 --title "YTDLazy - Adstractor" --text "Provide gMapsAPI-compliant directions to the otherShoneys:" --add-entry="debugInfo/url" --add-entry="note" --separator=$'\n'\| | tee >(op '??=\|*' '//\|/' > ~/.tmp/${0##*\/}.note ; ) | op "?!=[$'\n'\|]*" ; } )
+#done < <(zenity --entry --width 333 --title "YTDLazy - Adstractor" )
+
+if [[ -n "${adURL}" ]]; then
+	ytdl-quick -ad "${adURL}" && notify-send "$(echo -e "Successfully downloaded:\n${adURL}")" || notify-send "$(echo -e "FAILED to download:\n${adURL}")"
+else
+	notify-send "no dice..."
+	exit 1
+fi
+
+[[ -z "$(cat ~/.tmp/${0##*\/}.note)" ]] && rm ~/.tmp/${0##*\/}.note 2>/dev/null || mv ~/.tmp/${0##*\/}.note ~/Videos/YTDL/Ad-Watch/$(date '+%Y%m%d')/${adURL##*\/}.note
